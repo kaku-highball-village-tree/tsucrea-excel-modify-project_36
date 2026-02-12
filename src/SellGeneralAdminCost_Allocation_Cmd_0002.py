@@ -5035,7 +5035,7 @@ def move_cp_step0001_to_step0004_vertical_files(
         )
     )
     if objStart != objEnd and objStart[1] == 4 and objEnd[1] != 3:
-        objPriorRange = compute_previous_fiscal_range(objStart, objEnd)
+        objPriorRange = build_prior_range_for_cumulative(objStart, objEnd)
         if objPriorRange is not None:
             (iPriorStartYear, iPriorStartMonth), (iPriorEndYear, iPriorEndMonth) = objPriorRange
             objTargets.append(
