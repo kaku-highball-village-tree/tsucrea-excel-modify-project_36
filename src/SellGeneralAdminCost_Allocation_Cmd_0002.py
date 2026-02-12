@@ -4991,7 +4991,10 @@ def move_cp_step0001_to_step0004_vertical_files(
     objStart: Tuple[int, int],
     objEnd: Tuple[int, int],
 ) -> None:
-    pszTargetDirectory: str = os.path.join(pszDirectory, "temp")
+    pszTargetDirectory: str = os.path.join(
+        get_script_base_directory(),
+        "0001_CP別_step0001-0005",
+    )
     os.makedirs(pszTargetDirectory, exist_ok=True)
     iStartYear, iStartMonth = objStart
     iEndYear, iEndMonth = objEnd
@@ -5003,13 +5006,13 @@ def move_cp_step0001_to_step0004_vertical_files(
             objTargets.append(
                 os.path.join(
                     pszDirectory,
-                    f"0001_CP別_{pszStep}_単月_損益計算書_{iEndYear}年{pszEndMonth}月_vertical.tsv",
+                    f"0001_CP別_{pszStep}_単月_損益計算書_{iEndYear}年{pszEndMonth}月.tsv",
                 )
             )
         objTargets.append(
             os.path.join(
                 pszDirectory,
-                f"0002_CP別_step0004_単月_損益計算書_{iEndYear}年{pszEndMonth}月_vertical.tsv",
+                f"0001_CP別_step0005_単月_損益計算書_{iEndYear}年{pszEndMonth}月_vertical.tsv",
             )
         )
     for pszStep in ("step0001", "step0002", "step0003", "step0004"):
@@ -5018,7 +5021,7 @@ def move_cp_step0001_to_step0004_vertical_files(
                 pszDirectory,
                 (
                     f"0001_CP別_{pszStep}_累計_損益計算書_"
-                    f"{iStartYear}年{pszStartMonth}月-{iEndYear}年{pszEndMonth}月_vertical.tsv"
+                    f"{iStartYear}年{pszStartMonth}月-{iEndYear}年{pszEndMonth}月.tsv"
                 ),
             )
         )
@@ -5026,11 +5029,25 @@ def move_cp_step0001_to_step0004_vertical_files(
         os.path.join(
             pszDirectory,
             (
-                "0002_CP別_step0004_累計_損益計算書_"
+                "0001_CP別_step0005_累計_損益計算書_"
                 f"{iStartYear}年{pszStartMonth}月-{iEndYear}年{pszEndMonth}月_vertical.tsv"
             ),
         )
     )
+    if objStart != objEnd and objStart[1] == 4 and objEnd[1] != 3:
+        objPriorRange = build_prior_range_for_cumulative(objStart, objEnd)
+        if objPriorRange is not None:
+            (iPriorStartYear, iPriorStartMonth), (iPriorEndYear, iPriorEndMonth) = objPriorRange
+            objTargets.append(
+                os.path.join(
+                    pszDirectory,
+                    (
+                        "0001_CP別_step0005_累計_損益計算書_"
+                        f"{iPriorStartYear}年{iPriorStartMonth:02d}月-"
+                        f"{iPriorEndYear}年{iPriorEndMonth:02d}月_vertical.tsv"
+                    ),
+                )
+            )
     for pszPath in objTargets:
         if not os.path.isfile(pszPath):
             continue
