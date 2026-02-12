@@ -5093,7 +5093,7 @@ def copy_company_step0006_files(
             create_step0007=create_step0007,
         ):
             pszTargetPath: str = os.path.join(pszTargetDirectory, os.path.basename(pszOutputPath))
-            shutil.copy2(pszOutputPath, pszTargetPath)
+            shutil.move(pszOutputPath, pszTargetPath)
 
 
 def build_company_step0006_files(
