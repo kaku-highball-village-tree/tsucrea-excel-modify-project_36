@@ -5027,6 +5027,23 @@ def move_cp_step0001_to_step0004_vertical_files(
                     ),
                 )
             )
+        if pszPrefix == "0002_CP別":
+            if objStart == objEnd:
+                objTargets.append(
+                    os.path.join(
+                        pszDirectory,
+                        f"{pszPrefix}_step0004_単月_損益計算書_{iEndYear}年{pszEndMonth}月_vertical.tsv",
+                    )
+                )
+            objTargets.append(
+                os.path.join(
+                    pszDirectory,
+                    (
+                        f"{pszPrefix}_step0004_累計_損益計算書_"
+                        f"{iStartYear}年{pszStartMonth}月-{iEndYear}年{pszEndMonth}月_vertical.tsv"
+                    ),
+                )
+            )
         objTargets.append(
             os.path.join(
                 pszDirectory,
