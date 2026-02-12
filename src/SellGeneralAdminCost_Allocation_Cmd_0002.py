@@ -1245,6 +1245,15 @@ def write_transposed_tsv(pszInputPath: str) -> None:
             objOutputFile.write("\t".join(objRow) + "\n")
 
 
+
+
+def is_protected_cp_step0006_tsv(pszFilePath: str) -> bool:
+    pszFileName: str = os.path.basename(pszFilePath)
+    return (
+        pszFileName.startswith("0001_CP別_step0006_")
+        and pszFileName.endswith(".tsv")
+    )
+
 def move_files_to_temp_and_copy_back(objFilePaths: List[str], pszBaseDirectory: str) -> None:
     if not objFilePaths:
         return
@@ -1253,6 +1262,8 @@ def move_files_to_temp_and_copy_back(objFilePaths: List[str], pszBaseDirectory: 
     os.makedirs(pszTempDirectory, exist_ok=True)
 
     for pszFilePath in objFilePaths:
+        if is_protected_cp_step0006_tsv(pszFilePath):
+            continue
         if not os.path.isfile(pszFilePath):
             continue
         pszFileName: str = os.path.basename(pszFilePath)
@@ -1269,6 +1280,8 @@ def move_files_to_temp(objFilePaths: List[str], pszBaseDirectory: str) -> None:
     os.makedirs(pszTempDirectory, exist_ok=True)
 
     for pszFilePath in objFilePaths:
+        if is_protected_cp_step0006_tsv(pszFilePath):
+            continue
         if not os.path.isfile(pszFilePath):
             continue
         pszFileName: str = os.path.basename(pszFilePath)
