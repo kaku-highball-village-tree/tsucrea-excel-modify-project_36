@@ -1505,17 +1505,11 @@ def build_cp_period_ranges_from_selected_range(
         if objRangeItem not in objResult:
             objResult.append(objRangeItem)
 
-    add_range(objRange)
-
     objFiscalARanges = split_by_fiscal_boundary(objStart, objEnd, 3)
-    if len(objFiscalARanges) >= 2:
-        add_range(objFiscalARanges[-2])
     if objFiscalARanges:
         add_range(objFiscalARanges[-1])
 
     objFiscalBRanges = split_by_fiscal_boundary(objStart, objEnd, 8)
-    if len(objFiscalBRanges) >= 2:
-        add_range(objFiscalBRanges[-2])
     if objFiscalBRanges:
         add_range(objFiscalBRanges[-1])
 
