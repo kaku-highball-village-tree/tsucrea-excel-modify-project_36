@@ -355,6 +355,27 @@ def handle_period_left_down() -> None:
     os.startfile(pszTargetPath)
 
 
+def handle_period_left_double_click() -> None:
+    pszExecutionRoot = find_latest_execution_root_directory()
+    if pszExecutionRoot is None:
+        show_error_message_box(
+            "Error: 出力フォルダーがまだ作成されていません。",
+            "SellGeneralAdminCost_Allocation_DnD",
+        )
+        return
+    pszPeriodDirectory = os.path.join(pszExecutionRoot, "期間")
+    pszTargetPath = os.path.join(
+        pszPeriodDirectory,
+        "SellGeneralAdminCost_Allocation_Cmd_AccountPeriodRange.txt",
+    )
+    if not os.path.isfile(pszTargetPath):
+        show_error_message_box(
+            "Error: ファイルが見つかりません。\n" + pszTargetPath,
+            "SellGeneralAdminCost_Allocation_DnD",
+        )
+        return
+    os.startfile(pszTargetPath)
+
 def handle_period_right_down() -> None:
     pszExecutionRoot = find_latest_execution_root_directory()
     if pszExecutionRoot is None:
@@ -1683,6 +1704,13 @@ def window_proc(
 
     if iMessage == win32con.WM_PARENTNOTIFY:
         iEvent = get_low_word(iWparam)
+        if iEvent == win32con.WM_LBUTTONDBLCLK:
+            iControlHandle: int = iLparam
+            if iControlHandle in g_action_button_handles:
+                iButtonId = win32gui.GetDlgCtrlID(iControlHandle)
+                if iButtonId == BUTTON_ID_BASE + 0:
+                    handle_period_left_double_click()
+                    return 0
         if iEvent in (win32con.WM_RBUTTONDOWN, win32con.WM_RBUTTONUP):
             iControlHandle: int = iLparam
             if iControlHandle in g_action_button_handles:
