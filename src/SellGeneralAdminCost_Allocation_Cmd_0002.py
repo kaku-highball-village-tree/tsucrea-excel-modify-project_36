@@ -4971,6 +4971,31 @@ def create_cumulative_reports(pszPlPath: str) -> None:
     copy_cp_management_excels(pszCompanyManagementPath, pszGroupManagementPath)
     create_pj_summary_gross_profit_ranking_excel(pszDirectory)
     create_pj_summary_sales_cost_sg_admin_margin_excel(pszDirectory)
+    move_pj_summary_tsv_files_to_temp_by_prefix(pszDirectory)
+
+
+def move_pj_summary_tsv_files_to_temp_by_prefix(pszDirectory: str) -> None:
+    pszTempDirectory: str = os.path.join(pszDirectory, "temp")
+    os.makedirs(pszTempDirectory, exist_ok=True)
+    for pszPrefix in (
+        "0001_PJサマリ",
+        "0002_PJサマリ",
+        "0003_PJサマリ",
+        "0004_PJサマリ",
+        "0005_PJサマリ",
+    ):
+        pszTargetDirectory: str = os.path.join(pszTempDirectory, pszPrefix)
+        os.makedirs(pszTargetDirectory, exist_ok=True)
+        for pszFileName in os.listdir(pszDirectory):
+            if not pszFileName.startswith(pszPrefix + "_"):
+                continue
+            if not pszFileName.endswith(".tsv"):
+                continue
+            pszSourcePath: str = os.path.join(pszDirectory, pszFileName)
+            if not os.path.isfile(pszSourcePath):
+                continue
+            pszTargetPath: str = os.path.join(pszTargetDirectory, pszFileName)
+            shutil.move(pszSourcePath, pszTargetPath)
 
 
 def copy_cp_step0005_vertical_files(pszDirectory: str, objPaths: List[Optional[str]]) -> None:
