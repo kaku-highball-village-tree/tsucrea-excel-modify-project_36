@@ -1245,6 +1245,15 @@ def write_transposed_tsv(pszInputPath: str) -> None:
             objOutputFile.write("\t".join(objRow) + "\n")
 
 
+
+
+def is_protected_cp_step0006_tsv(pszFilePath: str) -> bool:
+    pszFileName: str = os.path.basename(pszFilePath)
+    return (
+        pszFileName.startswith("0001_CP別_step0006_")
+        and pszFileName.endswith(".tsv")
+    )
+
 def move_files_to_temp_and_copy_back(objFilePaths: List[str], pszBaseDirectory: str) -> None:
     if not objFilePaths:
         return
@@ -1253,6 +1262,8 @@ def move_files_to_temp_and_copy_back(objFilePaths: List[str], pszBaseDirectory: 
     os.makedirs(pszTempDirectory, exist_ok=True)
 
     for pszFilePath in objFilePaths:
+        if is_protected_cp_step0006_tsv(pszFilePath):
+            continue
         if not os.path.isfile(pszFilePath):
             continue
         pszFileName: str = os.path.basename(pszFilePath)
@@ -1269,6 +1280,8 @@ def move_files_to_temp(objFilePaths: List[str], pszBaseDirectory: str) -> None:
     os.makedirs(pszTempDirectory, exist_ok=True)
 
     for pszFilePath in objFilePaths:
+        if is_protected_cp_step0006_tsv(pszFilePath):
+            continue
         if not os.path.isfile(pszFilePath):
             continue
         pszFileName: str = os.path.basename(pszFilePath)
@@ -4971,6 +4984,31 @@ def create_cumulative_reports(pszPlPath: str) -> None:
     copy_cp_management_excels(pszCompanyManagementPath, pszGroupManagementPath)
     create_pj_summary_gross_profit_ranking_excel(pszDirectory)
     create_pj_summary_sales_cost_sg_admin_margin_excel(pszDirectory)
+    move_pj_summary_tsv_files_to_temp_by_prefix(pszDirectory)
+
+
+def move_pj_summary_tsv_files_to_temp_by_prefix(pszDirectory: str) -> None:
+    pszTempDirectory: str = os.path.join(pszDirectory, "temp")
+    os.makedirs(pszTempDirectory, exist_ok=True)
+    for pszPrefix in (
+        "0001_PJサマリ",
+        "0002_PJサマリ",
+        "0003_PJサマリ",
+        "0004_PJサマリ",
+        "0005_PJサマリ",
+    ):
+        pszTargetDirectory: str = os.path.join(pszTempDirectory, pszPrefix)
+        os.makedirs(pszTargetDirectory, exist_ok=True)
+        for pszFileName in os.listdir(pszDirectory):
+            if not pszFileName.startswith(pszPrefix + "_"):
+                continue
+            if not pszFileName.endswith(".tsv"):
+                continue
+            pszSourcePath: str = os.path.join(pszDirectory, pszFileName)
+            if not os.path.isfile(pszSourcePath):
+                continue
+            pszTargetPath: str = os.path.join(pszTargetDirectory, pszFileName)
+            shutil.move(pszSourcePath, pszTargetPath)
 
 
 def copy_cp_step0005_vertical_files(pszDirectory: str, objPaths: List[Optional[str]]) -> None:
@@ -4991,51 +5029,60 @@ def move_cp_step0001_to_step0004_vertical_files(
     objStart: Tuple[int, int],
     objEnd: Tuple[int, int],
 ) -> None:
-    pszTargetDirectory: str = os.path.join(pszDirectory, "temp")
-    os.makedirs(pszTargetDirectory, exist_ok=True)
     iStartYear, iStartMonth = objStart
     iEndYear, iEndMonth = objEnd
     pszStartMonth: str = f"{iStartMonth:02d}"
     pszEndMonth: str = f"{iEndMonth:02d}"
-    objTargets: List[str] = []
-    if objStart == objEnd:
+
+    def move_cp_files_by_prefix(pszPrefix: str) -> None:
+        pszTargetDirectory: str = os.path.join(
+            get_script_base_directory(),
+            f"{pszPrefix}_step0001-0005",
+        )
+        os.makedirs(pszTargetDirectory, exist_ok=True)
+        objTargets: List[str] = []
+        if objStart == objEnd:
+            for pszStep in ("step0001", "step0002", "step0003", "step0004"):
+                objTargets.append(
+                    os.path.join(
+                        pszDirectory,
+                        f"{pszPrefix}_{pszStep}_単月_損益計算書_{iEndYear}年{pszEndMonth}月.tsv",
+                    )
+                )
         for pszStep in ("step0001", "step0002", "step0003", "step0004"):
             objTargets.append(
                 os.path.join(
                     pszDirectory,
-                    f"0001_CP別_{pszStep}_単月_損益計算書_{iEndYear}年{pszEndMonth}月_vertical.tsv",
+                    (
+                        f"{pszPrefix}_{pszStep}_累計_損益計算書_"
+                        f"{iStartYear}年{pszStartMonth}月-{iEndYear}年{pszEndMonth}月.tsv"
+                    ),
+                )
+            )
+        if objStart == objEnd:
+            objTargets.append(
+                os.path.join(
+                    pszDirectory,
+                    f"{pszPrefix}_step0004_単月_損益計算書_{iEndYear}年{pszEndMonth}月_vertical.tsv",
                 )
             )
         objTargets.append(
             os.path.join(
                 pszDirectory,
-                f"0002_CP別_step0004_単月_損益計算書_{iEndYear}年{pszEndMonth}月_vertical.tsv",
-            )
-        )
-    for pszStep in ("step0001", "step0002", "step0003", "step0004"):
-        objTargets.append(
-            os.path.join(
-                pszDirectory,
                 (
-                    f"0001_CP別_{pszStep}_累計_損益計算書_"
+                    f"{pszPrefix}_step0004_累計_損益計算書_"
                     f"{iStartYear}年{pszStartMonth}月-{iEndYear}年{pszEndMonth}月_vertical.tsv"
                 ),
             )
         )
-    objTargets.append(
-        os.path.join(
-            pszDirectory,
-            (
-                "0002_CP別_step0004_累計_損益計算書_"
-                f"{iStartYear}年{pszStartMonth}月-{iEndYear}年{pszEndMonth}月_vertical.tsv"
-            ),
-        )
-    )
-    for pszPath in objTargets:
-        if not os.path.isfile(pszPath):
-            continue
-        pszTargetPath: str = os.path.join(pszTargetDirectory, os.path.basename(pszPath))
-        shutil.move(pszPath, pszTargetPath)
+        for pszPath in objTargets:
+            if not os.path.isfile(pszPath):
+                continue
+            pszTargetPath: str = os.path.join(pszTargetDirectory, os.path.basename(pszPath))
+            shutil.move(pszPath, pszTargetPath)
+
+    move_cp_files_by_prefix("0001_CP別")
+    move_cp_files_by_prefix("0002_CP別")
 
 
 def copy_company_step0006_files(
